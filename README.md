@@ -1,0 +1,2 @@
+# botmainscript
+kasey main botscript
