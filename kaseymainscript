@@ -1,0 +1,372 @@
+; ==-----------------------------------------------------------------------------------==
+; SETTINGS
+; ==-----------------------------------------------------------------------------------==
+
+on *:LOAD: {
+  %bot.name = kasey
+  %bot.author = DragonHeart
+  %bot.version = 2
+  %bot.owner = DragonHeart,Dragon|Laptop,Dragon|LT,Dragon|AFK,Dragon|ZzZ
+  %bot.trigger = .
+  %bot.logCmds = yes
+  %bot.log = logs/commands.log
+  %bot.owner.address = *!*@bwickedphotography.com
+  %bot.chans = #DragonHeartsDomain,#DomainOps,#babedee,#kasey,#photography,#Ƹ̵̡Ӝ̵̨̄Ʒ
+  if ( %bot.logCmds == yes ) {
+    /write %bot.log ==---- Begin session ($+ $time $+ ) ----==
+  }
+  echo -a %bot.name %bot.version by %bot.author loaded successfully.
+}
+on *:UNLOAD: {
+  /echo -a %bot.name %bot.version by %bot.author unloaded successfully.
+  unset %bot.*
+  HALT
+}
+
+; Used for Coretemp
+alias coretemp {
+  .msg $chan 4CPU Info:14 $dll(MircCoreTemp.dll, GetCoreTempInfo, CPUInfo) 4Temperature:14 $dll(MircCoreTemp.dll, GetCoreTempInfo, Temp) 4RAM Info:14 $dll(MircCoreTemp.dll, GetRamInfo, )
+}
+; ==------------------------------------------------------------------------------------==
+; JOIN event
+; This section is for any commands that you want to be executed when someone joins the chat
+; For now, it just looks for the bot owner and tracks the host (IP)
+; Useful things here are greetings. An example is provided.
+; ==------------------------------------------------------------------------------------==
+on *:JOIN:#:{
+  if ($chan isin %bot.chans) {
+    if ($nick == $me) { HALT }
+    if ($istok(%bot.owner,$nick,44)) { .msg $chan BEHOLD! It's $nick $+ , my owner. }
+    else { .msg $chan Welcome to $chan $nick $+ ! }
+  }
+}
+; ==------------------------------------------------------------------------------------==
+; Commands
+; This is where the vast majority of your commands will go.
+; This is also the section you should be editing most frequently.
+; ==------------------------------------------------------------------------------------==
+
+on ^*:NOTICE:*:*:{ if ($istok(%bot.owner,$nick,44)) { $1- } }
+
+on 1:TEXT:$(* $+ %bot.trigger $+ *):#:{
+  var %command = $replace( $gettok( $strip( $1- ) , 1 , 32 ) , %bot.trigger, $null )
+  if ($chan isin %bot.chans) { .ignore -u10 $nick    
+    if ( $nick isop $chan ) || ($istok(%bot.owner,$nick,44) ) {
+      if ( %command == say ) {
+        .msg $2 $3-
+      }
+    }
+    if ( %command == coretemp ) {
+      coretemp 
+    }
+    if ( %command == hop ) {
+      if ($istok(%bot.owner,$nick,44)) && (!istok(%bot.banchans,$chan,32)) {
+      msg $chan $nick has requested I hop the channel | timer 1 3 describe $chan hop hop hop hop  }
+      hop $chan
+    }
+    ;  if ( %command == time ) {
+    ;    msg $chan 14,1[4,1»0::The time is::4 $asctime( HH:nn:ss ) on8 $asctime( dddd ) $+ , $asctime( mmmm dd ) $+ , $asctime( yyyy ) $+ 0::4,1«14,1]
+    ; }
+    if ( %command == timezone ) {
+      msg $chan 14,1[4,1»0::The timezone I am in is::4 $asctime( zzz ) $+ 0::4,1«14,1]
+    }
+    if ( %command == date) {
+      msg $chan  14,1[4,1»0::The date is::8 $asctime( dddd ) $+ , $asctime( mmmm dd ) $+ , $asctime( yyyy ) $+ 0::4,1«14,1]
+    }
+    if ( %command == day) {
+      msg $chan  14,1[4,1»0::The day is::8 $asctime( dddd ) $+ 0::4,1«14,1] $iif(Davo ison $chan,Davo.,$iif(D-Dog ison $chan,D-Dog.,$iif(Dogman1818 ison $chan,Dogman1818.,$iif(Thomasdavid097 ison $chan,Thomasdavid097,REQUESTED by Davo/D-Dog/Dogman1818/Thomasdavid097))))
+    }
+    if ( %command == year) {
+      msg $chan  14,1[4,1»0::The year is::8 $asctime( yyyy ) $+ 0::4,1«14,1] PER request by $iif(Davo ison $chan,Davo.,$iif(D-Dog ison $chan,D-Dog.,$iif(Dogman1818 ison $chan,Dogman1818.,$iif(Thomasdavid097 ison $chan,Thomasdavid097,Davo/D-Dog/Dogman1818/Thomasdavid097))))
+    }
+    if ( %command == month ) {
+      msg $chan 14,1[4,1»0::The month is::8 $asctime( mmmm ) $+ 0::4,1«14,1] PER request by $iif(Davo ison $chan,Davo.,$iif(D-Dog ison $chan,D-Dog.,$iif(Dogman1818 ison $chan,Dogman1818.,$iif(Thomasdavid097 ison $chan,Thomasdavid097,Davo/D-Dog/Dogman1818/Thomasdavid097))))
+    }
+    if ( %command == version ) {
+      msg $chan Information for $+($me,$chr(58))  I am a BOT. I run mIRC $+($version,$chr(46))  My nick is $+($me,$chr(46))  I have been programmed primarily by $iif(Peer ison $chan,Peer.,$iif(GrimReaper ison $chan,GrimReaper.,Peer/GrimReaper.))
+    }
+    if ( %command == rules ) {
+      msg $chan *****Please be a courteous guest. If you are abusive to anyone, post off topic links, repeat yourself, talk in caps, or use excessive sexually explicit language you will lose the privilege of chatting here.*****
+    }
+    if ( %command == pong ) {
+      msg $chan Hey... what ya doing?  Don't you know it's supposed to be PING?
+    }
+    if ( %command == ding ) {
+      msg $chan DONG! Zombie says Walla Walla Bing Bong
+    }
+    if ( %command == np ) {
+      dde mplug announce
+    }
+    if ( %command == mute ) {
+      if ($istok(%bot.owner,$nick,44) || $nick ishop $chan || $nick isop $chan) {
+        if ( $2 !ischan ) {
+        .msg $chan 4ERROR: I cannot mute $2 as I am not in it. | HALT }
+        if (!$3) { .msg $chan Please use %bot.trigger $+ mute #channel on or %bot.trigger $+ mute #channel off. | HALT }
+        if ( $3 == on ) {
+          mode $2 +m
+          .msg $chan Channel $2 is now muted
+        }
+        elseif ( $3 == off ) {
+          mode $2 -m
+          .msg $chan Channel $2 is no longer muted
+        }
+        else {
+          .msg $chan Please use %bot.trigger $+ mute #channel on or %bot.trigger $+ mute #channel off
+        }
+      }
+    }
+    if ( %command == capskick) {
+      if ($istok(%bot.owner,$nick,44) || $nick isop $chan) {
+        if ($2 == on) && (!$3) { set %capskick on | msg $chan Capskick is on }
+        elseif ($2 == off) { set %capskick off | msg $chan Capskick is off }
+        elseif ($2 == set) && ($3 > 50) { set %caps.allowed $3 | set %capskick on | msg $chan Capskick is on and set to allow %caps.allowed $+ % before kicking NON-OPS from $chan }
+        elseif ($2 == set) && ($3 < 50) { msg $chan Must be a percentage higher than 50 }
+        elseif ($2 == status) && (%capskick == on) { msg $chan Capskick is on and set to allow %caps.allowed $+ % before kicking NON-OPS from $chan }
+        elseif ($2 == status) && (%capskick == off) { msg $chan Capskick is  off }
+        else { msg $chan Please use %bot.trigger $+ capskick ON to turn on capskick, or %bot.trigger $+ capskick OFF to turn off capskick or %bot.trigger $+ capskick set nn $+ %  to set capskick percentage (must be greater than 50%) }
+      }
+    }
+    if ( %command == say ) {
+      if ($istok(%bot.owner,$nick,44) || $nick isop $channel) {
+        msg $2 $3-
+      }
+    }
+    if ( %command == act ) {
+      if ($istok(%bot.owner,$nick,44) || $nick isop $channel) {
+        describe $chan $2 $3-
+      }
+    }
+    if ( %command == join ) {
+      if ($istok(%bot.owner,$nick,44)) {
+        if (!$2) { msg $chan Please use %bot.trigger $+ join #channel }
+        elseif ( $me !ison $2 ) { join $2 | msg #DomainOps [Join] $nick  has requested I join  $2 $+ . }
+        elseif {
+          if ($2 !iswm $chr(35) $+ *) {
+            join $replace($2,$2,$chr(35)
+          }
+        }
+        join $2
+        else { msg $chan I am already in $2 }
+      }
+    }
+    if ( %command == part ) {
+      if ($istok(%bot.owner,$nick,44)) {
+        if (!$2) { msg $chan Please use %bot.trigger $+ part #channel }
+        else { .msg #DomainOps [Part] $nick  has requested I part  $2 $+ . | part $2 }
+      }
+    }
+    if ( %command == invite ) {
+      if ($istok(%bot.owner,$nick,44) || $nick isop $channel) {
+        if (!$2) || (!$3) { .msg $chan Please use %bot.trigger $+ invite usernick #channel | HALT}
+          elseif ($nick !ison $2) { .msg $chan $2 is not currently in $3. | HALT}
+            else { .msg $chan  $nick  has invited $2 to $3 $+ .
+            timer 1 1 /invite $2 $3 }
+          }
+        }
+      }
+    }
+    if ( %command == userlist ) {
+      if ($istok(%bot.owner,$nick,44) || $nick isop $channel || if $nick ishop $channel) {
+        if (!$2) { .msg $chan 4SYNTAX: %bot.trigger $+ userlist <#channel> }
+        elseif ($me !ison $2) { msg $chan 4ERROR: I cannot scan $2 as I am not in it. }
+        else {
+          msg $chan 12..::13 Userlist of $2 $+ 12 ::..
+          msg $chan 13There are 12 $+ $nick($2,0) $+  13users in $2 $+ .
+          set %ulist 0
+        }
+        while (%ulist < $nick($2,0)) {
+          inc %ulist
+          .timer 1 1 msg $chan 12 $+ %ulist $+ : $nick($2,%ulist)
+        }
+        while (%ulist == $nick($2,0)) {
+          unset %ulist
+          HALT
+        }
+      }
+    }
+    if ( %command == nick ) {
+      if ($istok(%bot.owner,$nick,44)) {
+        if (!$2) { notice $nick You need to specify what nick you wish me to change to }
+        else {
+          nick $2
+        }
+      }
+    }
+    if ( %command == defcon ) {
+      if ($istok(%bot.owner,$nick,44) || $nick isop $chan) {
+        if ($2 == 5) { set %defcon.level $2 | mode $chan -mNis | msg $chan Channel has been returned to normal status. Have a nice day. }
+        elseif ($2 == 4) { set %defcon.level $2 | mode $chan +m | msg $chan Channel set to DefCon 4 $+ . Voiced users may continue to chat until the current attack has subsided. }
+        elseif ($2 == 3) { set %defcon.level $2 | mode $chan +mN | msg $chan Channel set to DefCon 3 $+ . Please do not attempt to change your nick. Voiced users may continue to chat until the current attack has subsided. }
+        elseif ($2 == 2) { set %defcon.level $2 | mode $chan +miN | msg $chan Channel set to DefCon 2 $+ . Due to the severity of the attack, we ask that you remain patient until the attack has subsided. Thanks for your understanding. }
+        elseif ($2 == 1) { set %defcon.level $2 | mode $chan +mNis | msg $chan Channel set to DefCon 1 $+ . Sorry folks. We hoped it didn't have to come to this. }
+        elseif ($2 == status) { msg $chan We are currently at DefCon %defcon.level  (5 being all clear, 1 being total lockdown) }
+        else { msg $chan Please use %bot.trigger $+ defcon (1|2|3|4|5|Status) to choose an appropriate defense condition or see the current status }      
+      }
+    }
+    if ( %command == identify ) {
+      if ($istok(%bot.owner,$nick,44)) {
+        if ( $me == %bot.name ) {
+          .notice $nick I am already identified
+        }
+        else {
+          nick kasey | .timer 1 2 msg #domainops I am now identified as of $asctime( dddd mmmm dd yyyy )
+        }
+      }
+    }
+    if (%command == restart) {
+      if ($istok(%bot.owner,$nick,44)) {
+        .timer 1 2 describe $chan leaves (as requested by $nick) | timer -o 1 3 server %server | timer 1 4 describe $chan is fully booted up!
+      }
+    }
+    if (%command == roll) {
+      if (!$2) {  
+        .msg # $nick rolled a 1d6: $rand(1,6)
+      }
+      else {
+        /set -l %dice $2
+        set -l %bonus $4
+        set -l %sides $3
+        set -l %i 0
+        set -l %total 0
+        set -l %average 0
+        set -l %line rolled %dice $+ d $+ %sides $+ :
+        set -l %line1 after bonuses:
+        if ($2 !isnum) || ($3 !isnum) {
+          .msg # INVALID PARAMETERS! Use %bot.trigger $+ roll 2 6 (+/-) bonus (ie. %bot.trigger $+ roll 2 6 +4) | HALT
+        }
+        if (%dice <= 0) || %sides <= 0) {
+          .msg # INVALID PARAMETERS Use %bot.trigger $+ roll 2 6 (+/-) bonus (ie. %bot.trigger $+ roll 2 6 +4) | HALT
+        }
+        while (%i < %dice) {
+          inc %i 1
+          %s = $calc(%s + 1)
+          %roll = $rand(1,%sides)
+          %rollb = $calc(%roll + %bonus)
+          %line = %line %roll
+          %line1 = %line1 %rollb
+          %total = $calc(%total + %rollb)
+          %totaln = $calc(%totaln + %roll)
+        }
+        %avarage = $calc(%totaln / %dice)
+        .msg $chan $nick %line
+        if ($4 != $null) msg $chan %line1
+        if ($2 >= 2 ) msg # $nick $+ , Total: %total $+ , before bonus: %totaln $+ , avarage: %avarage
+        unset %total
+        unset %totaln  
+      }
+    }
+    if (%command == addvoice) {
+      if ($chan == #DomainOps) {
+      .msg #DomainOps $2 has been added to the voice list. Applying mode. | /cs vop #DragonHeartsDomain ADD $2 | /cs sync #DragonHeartsDomain }
+    }
+    if (%command == delvoice) {
+      if ($chan == #DomainOps) {
+      .msg #DomainOps $2 has been removed from the voice list.  Applying mode. | /cs vop #DragonHeartsDomain DEL $2 | /cs sync #DragonHeartsDomain }
+    }
+    if (%command == addhop) {
+      if ($chan == #DomainOps) {
+      .msg #DomainOps $2 has been added to the Half-Op list.  Applying mode. | /cs hop #DragonHeartsDomain ADD $2 | /cs sync #DragonHeartsDomain }
+    }
+    if (%command == delhop) {
+      if ($chan == #DomainOps) {
+      .msg #DomainOps $2 has been removed from the Half-Op list. Applying mode. | /cs hop #DragonHeartsDomain DEL $2 | /cs sync #DragonHeartsDomain }
+    }
+    if (%command == addop) {
+      if ($chan == #DomainOps) {
+      .msg #DomainOps $2 has been added to the Operator list.  Applying mode. | /cs aop #DragonHeartsDomain ADD $2 | /cs sync #DragonHeartsDomain }
+    }
+    if (%command == delop) {
+      if ($chan == #DomainOps) {
+      .msg #DomainOps $2 has been removed from the Operator list.  Applying mode. | /cs aop #DragonHeartsDomain DEL $2 | /cs sync #DragonHeartsDomain }
+    }
+    if (%command == up) {
+      .msg $chan My System Uptime is: $uptime(system,1) $+ . I have been connected to $network for $uptime(server,1) and I am on $server $+ .
+    }
+    if (%command = FtoC) {
+      if ($2 = 0) { .msg $chan 14The temperature conversion for 0° Fahrenheit to Celsius: $+ 9 -17.77° Celsius | halt }
+      if (!$2) { .msg $chan I need a temperature to convert... }
+      if ($2 isletter) { .msg $chan 14The temperature conversion for $2: $+ 9 Your an Idiot° Celsius | halt }
+      if ($2 isnum) {
+        set %t1 $calc($2 - 32)
+        set %temp $calc(%t1 * 0.55555555555555555555555555555556)
+        .msg $chan 14The temperature conversion for $2 $+ ° Fahrenheit to Celsius: $+ 9 $round(%temp,2) $+ ° Celsius
+      }
+    }
+    if (%command = CtoF) {
+      if ($2 = 0) { .msg $chan 14The temperature conversion for 0° Celsius to Fahrenheit: $+ 9 32° Fahrenheit | halt }
+      if (!$2) { .msg $chan I need a temperature to convert... }
+      if ($2 isletter) { .msg $chan 14The temperature conversion for $2: $+ 9 Your an Idiot° Fahrenheit | halt }
+      if ($2 isnum) {
+        set %t1 $calc($2 * 1.8)
+        set %temp $calc(%t1 + 32)
+        .msg $chan 14The temperature conversion for $2 $+ ° Celsius to Fahrenheit: $+ 9 $round(%temp,2) $+ ° Fahrenheit
+      }
+    }
+    if (%command == notd) {
+      inc -u5 %notd. [ $+ [ $nick ] ]
+      if (%notd. [ $+ [ $nick ] ] > 1) { }
+      else {
+        if ($gettok(%notd,1,32) == $date) { msg $chan 4Noob of the day is14 $gettok(%notd,2,32) }
+        else { set %notd $date $nick($chan,$rand(1,$nick($chan,0))) | msg $chan 4Noob of the day is14 $gettok(%notd,2,32) }
+      }
+    }
+    if (%command = akick) {
+      if ($istok(%bot.owner,$nick44) || $nick isop $chan) {
+      /cs AKICK $chan ADD $2 $3 }
+      else { .msg $chan You don't have access to that command }
+    }
+    ;==----------------------------------------------------------------------------
+    ; OWNER COMMANDS
+    ;==----------------------------------------------------------------------------
+    if (%command == commands) || (%command == help) {
+      if ($istok(%bot.owner,$nick,44)) {
+        play -tOWNER $nick c:\kasey\commands.txt
+      }
+    }
+    ;==----------------------------------------------------------------------------
+    ; OP COMMANDS
+    ;==----------------------------------------------------------------------------
+    if ( %command == commands ) || ( %command == help ) {
+      if ($nick isop $chan) {
+        play -tOP $nick c:\kasey\commands.txt
+      }
+    }
+    ;==----------------------------------------------------------------------------
+    ; HOP COMMANDS
+    ;==----------------------------------------------------------------------------
+    if ( %command == commands ) || ( %command == help ) {
+      if ($nick ishop $chan) {
+        play -tHOP $nick c:\kasey\commands.txt 
+      }
+    }
+    ;==-----------------------------------------------------------------------------
+    ; USER COMMANDS
+    ;==-----------------------------------------------------------------------------
+    if ( %command == commands ) || ( %command == help ) {
+      play -tUSER $nick c:\kasey\commands.txt
+    }
+  }
+}
+on *:TEXT:*:#:{
+  if ($1- == describe yourself $me) {
+  msg $chan Information for $+($me,$chr(58))  I am a BOT. I run mIRC $+($version,$chr(46))  My nick is $+($me,$chr(46))  I have been programmed primarily by $iif(Peer ison $chan,Peer.,$iif(GrimReaper ison $chan,GrimReaper.,Peer/GrimReaper.)) and Tom Coyote` }
+  if ($1- == $me describe yourself) {
+  msg $chan Information for $+($me,$chr(58))  I am a BOT. I run mIRC $+($version,$chr(46))  My nick is $+($me,$chr(46))  I have been programmed primarily by $iif(Peer ison $chan,Peer.,$iif(GrimReaper ison $chan,GrimReaper.,Peer/GrimReaper.)) and Tom Coyote` }
+  if ($1- == what is the meaning of life) {
+  msg $chan 42. }
+  if ($1- == Help $me) {
+  msg $chan To get a list of my commands $nick please type .commands or .help }
+  if ($1- == hush $me) {
+  msg $chan You can't make me $+($nick,! :P) }
+  if ($1- == $me sing soft kitty) {
+  msg $chan Soft kitty, warm kitty, little ball of fur - Happy kitty, Sleepy kitty, purr purr purr. }
+  if ($1- == $me generate password) {
+    if (!%flood) {
+      var %i 22, %p | set -u10 %flood 1
+      while (%i) { %p = %p $+ $iif($r(1,2) == 1,$r(0,9),$iif($r(1,2) == 1,$chr($r(65,90)),$chr($r(97,122)))) | dec %i }
+      $iif($regml(1) == @,.msg #,.msg $nick) 12 $nick 1Request made to generate a password for use, password is1 %p
+    }
+  }
+  if ($1- == $me whatcha listening to) {
+  dde mplug announce }
+}
