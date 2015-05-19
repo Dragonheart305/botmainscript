@@ -1,0 +1,373 @@
+on *:text:kaseytalk*:?:{ if ($address($nick,2) == *!*@bwickedphotography.com) && ($1 == kaseytalk) {
+    if ($2 == on) { .enable #kaseytalk }
+    if ($2 == off) { .disable #kaseytalk }
+  }
+}
+#kaseytalk off
+on *:text:*:?:{
+  if ($1 == kaseytalk) { halt }
+  if ($address($nick,2) == *!*@bwickedphotography.com) { /msg #DragonHeartsDomain $1- }
+}
+on *:action:*:?:{
+  if ($1 == kaseytalk) { halt }
+  if ($address($nick,2) == *!*@bwickedphotography.com) { /describe #DragonHeartsDomain $1- }
+}
+
+#kaseytalk end
+on *:TEXT:@commands*:#: {
+  describe $chan ~addhelp 7@quote help 9 !8ball 13(!roulette/!dice/!bang) 9!weather help @news !bday !skittles 7(!ping,!finger,!version,!pong,^time(CTCP's)) (!quote/!qotd) 7(!tank!peashoot/!Shoot/^Phaser <nick>) !snack ~prod !roses !breakfast ~coffee @time @radio !F or !C number !calc
+  if ($address($nick,2) !== *!*@bwickedphotography)  { .ignore -cu10 $nick }
+}
+
+on *:text:~weather*:#: {
+  opchkweather
+  if ($group(#weather) == off) && (weather isin $1) && (on isin $2) && ($3 == $null) { .enable #weather | .msg $chan weather now on | halt }
+  if ($group(#weather) == on) && (weather isin $1) && (off isin $2) && ($3 == $null) { .disable #weather | .msg $chan weather now off | halt }
+  if ($group(#weather) == off) && (weather isin $1) && (off isin $2) && ($3 == $null) { .msg $chan weather already off | halt }
+  if ($group(#weather) == on) && (weather isin $1) && (on isin $2) && ($3 == $null) { .msg $chan weather already on  | halt }
+}
+on *:text:~quote*:#: {
+  opchkquote
+  if ($group(#quote) == off) && (quote isin $1) && (on isin $2) && ($3 == $null) { .enable #quote | .msg $chan quote now on | halt }
+  if ($group(#quote) == on) && (quote isin $1) && (off isin $2) && ($3 == $null) { .disable #quote | .msg $chan quote now off | halt }
+  if ($group(#quote) == off) && (quote isin $1) && (off isin $2) && ($3 == $null) { .msg $chan quote already off | halt }
+  if ($group(#quote) == on) && (quote isin $1) && (on isin $2) && ($3 == $null) { .msg $chan quote already on  | halt }
+}
+
+on *:text:!game*:#: {
+  opchkgame
+  if (game isin $1) && (help isin $2) { .msg $chan $nick 7!dice or 7!roulette or 7!bang are available games atm, enjoy!!! 3(if they do not work, ask a mod for help) | halt }
+  if ($group(#dice) == off) || ($group(#bang) == off) || ($group(#roulette) == off) && (games isin $1) && (on isin $2) && ($3 == $null) { .enable #dice | .enable #bang | .enable #roulette | .msg $chan All games now on | halt }
+  if ($group(#dice) == on) && ($group(#bang) == on) && ($group(#roulette) == on) && (games isin $1) && (on isin $2) && ($3 == $null) { .msg $chan All games were already on | halt }
+
+  if ($group(#dice) == on) || ($group(#bang) == on) || ($group(#roulette) == on) && (games isin $1) && (off isin $2) && ($3 == $null) { .disable #dice | .disable #bang | .disable #roulette | .msg $chan All games now off | halt }
+  if ($group(#dice) == off) && ($group(#bang) == off) && ($group(#roulette) == off) && (games isin $1) && (off isin $2) && ($3 == $null) { .msg $chan All games were already off | halt }
+
+  ; if ($group(#dice) == on) { echo #1234 farout }
+  if ($group(#dice) == off) && (off isin $3) && (dice isin $2) { .msg $chan !Dice game is already off | halt }
+  if ($group(#dice) == on) && (on isin $3) && (dice isin $2) { .msg $chan !Dice game is already on | halt }
+  if ($group(#dice) == on) && (off isin $3) && (dice isin $2) { .disable #dice | .msg $chan !Dice game is now off | halt }
+  if ($group(#dice) == off) && (on isin $3) && (dice isin $2) { .enable #dice | .msg $chan !Dice game is now on | halt }
+  if ($group(#bang) == off) && (off isin $3) && (bang isin $2) { .msg $chan !bang game is already off | halt }
+  if ($group(#bang) == on) && (on isin $3) && (bang isin $2) { .msg $chan !bang game is already on | halt }
+  if ($group(#bang) == on) && (off isin $3) && (bang isin $2) { .disable #bang | .msg $chan !bang game is now off | halt }
+  if ($group(#bang) == off) && (on isin $3) && (bang isin $2) { .enable #bang | .msg $chan !bang game is now on | halt }
+  if ($group(#roulette) == off) && (off isin $3) && (roulette isin $2) { .msg $chan !roulette game is already off | halt }
+  if ($group(#roulette) == on) && (on isin $3) && (roulette isin $2) { .msg $chan !roulette game is already on | halt }
+  if ($group(#roulette) == on) && (off isin $3) && (roulette isin $2) { .disable #roulette | .msg $chan !roulette game is now off | halt }
+  if ($group(#roulette) == off) && (on isin $3) && (roulette isin $2) { .enable #roulette | .msg $chan !roulette game is now on | halt }
+}
+
+on *:action:$($iif(* $me *summon* iswm $strip($1),$1)):#:{
+  if (!%t) { inc -u10 %t | :summons | inc %summons
+    $iif($nick(#,$r(1,$nick(#,0))) = $me,goto %summons,$&
+      describe # delivers summons $+ $chr(44) 8 $+ $chr(44) $+ 1to $v1) $+ . 9,6( summons served: %summons $+ )
+    .timer 1 5 /msg $chan Kaley cloak | .timer 1 10 /msg $chan Kaley courtmartial $v1 with banzai | .timer 1 20 msg $chan !bet guilty  | .timer 1 60 msg $chan Kaley decloak
+  }
+}
+
+on *:start: {
+  set -e %knick Kasey KaseyKasem Kasey! KaseyKasem! Kasey? KaseyKasem`?
+  set -e %room #dragonheartsdomain
+  set -e %troom #kasey
+  ; set -e %whistle 7♪6  ♫11  ♫13  ♪ 7 ♪♪ 9  ♫13  ♪  
+  set -e %whistle 7 $chr(9834) 6 $chr(9836) 11 $chr(9836) 13 $chr(9834) 7 $chr(9836) 9 $chr(9835) 13 $chr(9836)
+
+}
+alias script1 { echo %troom $scriptdir $script $scriptline %whistle  }
+alias room { msg %room $1- }
+alias droom { describe %room $1- }
+alias eroom {
+  ; # useage in script
+  ; eroom $nopath($script) $1-
+  echo %troom :7  $1-  : $nick  4:: $chan :6: $time : 7::  $1-
+}
+
+on *:TEXT:#mode*:#kasey,#domainops: {
+  if (!$2) { msg $chan Please specify a channel mode. oor F*ck Off. }
+  else {
+    mode # $2-
+    msg #domainops Applying modes to #
+  }
+}
+
+on $*:TEXT:/^!(eval|var)( |$)/Si:#:{
+  if ($ulevel < 19) { ignore -cu50 $nick | halt }
+  if ($ulevel < 1000) { msg $chan Who the Friggin' h3ll do you think you are? Bite me! | ignore -cu5 $nick | halt }
+  elseif (!$2) { msg $chan * Error: !eval <command here> dumbarse | halt }
+  elseif (($len($2) <= 2) && ($+($chr(36),p) isin $2-)) || (($len($2) >= 3) && ($+($chr(36),p,$chr(40)) isin $2-)) || (($len($2) <= 2) && ($+($chr(36),j) isin $2-)) || (($len($2) >= 3) && ($+($chr(36),j,$chr(40)) isin $2-)) { .msg $chan No WAy dude, not falling for that sh*t!!! | halt }
+  elseif ($+($chr(36),host) isin $2-) || ($+($chr(36),ip) isin $2-) { msg $chan No chance you're getting that info.. }
+  else {
+    writeini VarWrite.ini Variable1 1 $2- | $iif(($readini(VarWrite.ini,Variable1,1) == $null),goto end) | .msg $chan value is: $readini(VarWrite.ini,Variable1,1) | .timer 1 1 .remini VarWrite.ini Variable1
+    halt
+    :end
+    .msg $chan No Value Found For $2-
+    .timer 1 1 .remini VarWrite.ini Variable1
+  }
+  halt
+  :error
+  .timer 1 2 .join #kasey
+  .timer 1 4 .msg #kasey now, cut that out
+}
+
+on *:TEXT:!`'`*:#: {
+  if ($address($nick,2) == *!*@bwickedphotography.com) { set %nick #dragonheartsdomain }
+  if ($address($nick,2) !== *!*@bwickedphotography.com) { set %nick #kasey }
+  if ($ulevel < 19) { .ignore -cu50 $nick | halt }
+  if ($ulevel < 999) { msg $chan Who the Friggin' h3ll do you think you are? Bite me! | .ignore -cu5 $nick | halt }
+  else {
+    if ($2 == set) { setter $3- }
+  elseif (!$2) { msg $chan * Error: !`'` <command here> dumbarse } | else { $2- | .timer 1 4 msg #domainops Request $+(",,,/,$2-,,") has been executed for $nick $+ . } }
+  unset %nick
+}
+on 1:DNS:{
+  var %n = $dns(0)
+  msg #kasey 4 Found %n addresses
+  while (%n > 0) {
+    msg #kasey 4 dns: $dns(%n) nick: $dns(%n).nick addr: $dns(%n).addr ip: $dns(%n).ip
+    dec %n
+  }
+}
+alias setter { set $1- }
+on *:text:*!`'`*:?:{
+  if ($address($nick,2) == *!*@bwickedphotography.com) { set %nick #kasey }
+  if ($address($nick,2) !== *!*@bwickedphotography.com) { set %nick #kasey }
+  if ($ulevel < 31) { .ignore -cu50 $nick | halt }
+  if ($ulevel < 999) { notice $nick Who the Friggin' hell do you think you are? Bite me! | .ignore -cu5 $nick | halt }
+  else {
+  if (!$2) { notice $nick * Error: !`'` <command here> dumbarse } | else { $2- | .timer 1 4 msg %nick Request $+(",,,/,$2-,,") has been executed. } }
+  unset %nick
+}
+
+on *:text:*!eval*:?:{
+  if ($address($nick,2) == *!*@bwickedphotography.com) { set %nick #kasey | goto one }
+  if ($address($nick,2) !== *!*@bwickedphotography.com) { set %nick $chan }
+  :one
+  if ($ulevel < 31) { ignore -cu10 $nick | halt }
+  if ($ulevel < 999) { notice $nick Who the Friggin' hell do you think you are? Bite me! | .ignore -cu5 $nick | halt }
+  elseif (!$2) { notice $nick * Error: !eval <command here> dumbarse }
+  elseif ($+($chr(36),host) isin $2-) || ($+($chr(36),ip) isin $2-) { notice $nick No chance you're getting that info.. }
+  else {
+    { writeini VarWrite.ini Variable1 1 $2- | .msg %nick $readini(VarWrite.ini,Variable1,1) | .timer 1 1 .remini VarWrite.ini Variable1 }
+
+    unset %nick
+  }
+}
+
+;#### Start ShutUp Cindy
+on $1:text:$($+(/, (Shut Up|shut up) ,/)):#:{
+  if ($istok(%knick,$1,32)) || ($istok(%knick,$2,32)) || ($istok(%knick,$3,32)) { goto start }
+  else {
+    msg $chan who?
+    goto end
+  }
+  :start
+  if ($ulevel < 30) { msg $chan Who the Friggin' heck do you think you are? Bite me! | .ignore -cu10 $nick | halt }
+  else {
+    .ignore -ctu120 *@* | msg $chan Suthin Up, err Stuffin it up, eer , keepin me trap  shut...
+    var %animals2 $rand(1,104)
+    var %verbs2 $rand(1,7)
+    .timerretalk 1 125 describe $chan  $read(verbs.txt,p,%verbs2)  $read(animal_sounds.txt,p,%animals2) | .timerretalk1 1 125 .disable #Retalk
+    .enable #Retalk
+    unset %verbs2
+    unset %animals2
+    :end
+  }
+}
+
+;## Query
+on *:TEXT:!Shut*:?: {
+  if ($address($nick,1) == *!*lucifer@knowles217.bnc.geekshed.net) || ($address($nick,2) == *!*@bwickedphotography.com) { set %nick $nick | goto one }
+  else {
+    if ($address($nick,2) !== *!*@bwickedphotography.com) || ($address($nick,1) !== *!*lucifer@knowles217.bnc.geekshed.net) { set %nick #dragonheartsdomain }
+  }
+  :one
+  if ($istok(%knick,$1,32)) || ($istok(%knick,$2,32)) || ($istok(%knick,$3,32)) { goto start }
+  else {
+    msg %nick who?
+    goto end
+  }
+  :start
+  if ($ulevel < 30) { msg %nick Who the Friggin' heck do you think you are? Bite me! | .ignore -cu10 %nick | halt }
+  else {
+    .ignore -ctu120 *@* | msg %nick Suthin Up, err Stuffin it up, eer , keepin me trap  shut...
+    var %animals2 $rand(1,104)
+    var %verbs2 $rand(1,7)
+    .timerretalk 1 125 msg %nick  $read(verbs.txt,p,%verbs2)  $read(animal_sounds.txt,p,%animals2) | .timerretalk1 1 125 .disable #Retalk
+    .enable #Retalk
+    unset %verbs2
+    unset %animals2
+    :end
+  }
+}
+
+;## Query
+#Retalk off
+on *:TEXT:!Talk*:?: {
+  if ($address($nick,1) == *!*lucifer@knowles217.bnc.geekshed.net) || ($address($nick,2) == *!*@bwickedphotography.com) { set %nick $nick | goto one }
+  else {
+    if ($address($nick,2) !== *!*@bwickedphotography.com) || ($address($nick,1) !== *!*lucifer@knowles217.bnc.geekshed.net) { set %nick #dragonheartsdomain }
+  }
+  :one
+  if ($istok(%knick,$1,32)) || ($istok(%knick,$2,32)) || ($istok(%knick,$3,32)) { goto start }
+  else {
+    msg %nick who?
+    goto end
+  }
+  :start
+  if ($ulevel < 30) { msg %nick Who the Friggin' heck do you think you are? Bite me! | .ignore -cu10 %nick | halt }
+  else {
+    .ignore -r | msg %nick Ready to talk again I guess, been reprieved..
+    var %animals2 $rand(1,104)
+    var %verbs2 $rand(1,7)
+    .timerretalk off
+    .timerretalk1 off
+    .disable #Retalk
+    .timer 1 2 msg %nick  $read(verbs.txt,p,%verbs2)  $read(animal_sounds.txt,p,%animals2)
+    unset %verbs2
+    unset %animals2
+    :end
+  }
+}
+#Retalk end
+;# End ShutUP Cindy
+;####################################################################
+
+on $1:text:$($+(/, (scram|Scram) ,/)):#:{
+  if ($istok(%knick,$1,32)) { goto start }
+  else {
+    goto end
+  }
+  :start
+  if (!$istok(%knick,$1,32)) { msg $chan who? | halt }
+  if ($ulevel < 32) { msg $chan No thanks, not right now, ask me again later after I have thunkaboutit | if ($address($nick,2) !== *!*@bwickedphotography.com) .ignore -cu60 $nick | halt }
+  else {
+    .ignore -ctu10 *@* | partall disappearing
+    set %rac $rand(1,2)
+    set %qm 3< $+ $nick $+  3>
+    if (%rac == 1) { .timer 1 3 nick kasey | .timer 1 8 alljoin }
+    ; if (%rac == 2) { .timer 1 3 nick Kathy | .timer 1 8 alljoin }
+    if (%rac == 2) { .timer 1 3 nick kasey` | .timer 1 8 alljoin }
+    ; if (%rac == 4) { .timer 1 3 nick Kathy` | .timer 1 8 alljoin }
+    var %animals3 $rand(1,104)
+    var %verbs3 $rand(1,7)
+    var %punct4 $rand(1,9)
+    .timerretalk 1 125 describe $chan  $read(verbs.txt,p,%verbs3)  $read(animal_sounds.txt,p,%animals3) $+ $read(punctuation.txt,p,%punct4)
+    unset %punct4
+    unset %verbs3
+    unset %animals3
+    unset %qm
+    unset %rac
+    :end
+  }
+}
+
+on $1:text:$($+(/, (kasey* yer in the wrong nick) ,/)):#:{
+  if ($me == kasey) { msg $chan yer full of it | halt }
+  if (!$istok(%knick,$1,32)) { msg $chan who? | halt }
+  if ($istok(%knick,$1,32)) { goto start }
+  else {
+    goto end
+  }
+  :start
+  if (!$istok(%knick,$1,32)) { msg $chan who? | halt }
+  if ($ulevel < 32) { msg $chan No thanks, not right now, ask me again later after I have thunkaboutit | if ($address($nick,2) !== *!*@bwickedphotography.com) .ignore -cu60 $nick | halt }
+  else {
+    .ignore -ctu10 *@* | partall disappearing
+    set %qm 3< $+ $nick $+  3>
+    .timer 1 3 nick Cindy` | .timer 1 8 alljoin
+    var %animals3 $rand(1,104)
+    var %verbs3 $rand(1,7)
+    var %punct4 $rand(1,9)
+    .timerretalk 1 125 describe $chan  $read(verbs.txt,p,%verbs3)  $read(animal_sounds.txt,p,%animals3) $+ $read(punctuation.txt,p,%punct4)
+    unset %punct4
+    unset %verbs3
+    unset %animals3
+    unset %qm
+    unset %rac
+    :end
+  }
+}
+on $1:text:$($+(/, (zoo) ,/)):#:{
+  if (!$istok(%knick,$1,32)) { msg $chan who? | halt }
+  .echo $chan $matchkey $nopath($script) scriptline#: $scriptline $nick userlevel: $ulevel target: $target line info1-: $1-
+  if ($istok(%knick,$1,32)) && (zoo isin $2-) { goto start }
+  else {
+    goto end
+  }
+  :start
+  if (!$istok(%knick,$1,32)) { msg $chan who? | halt }
+  if ($ulevel < 32) { msg $chan No thanks, not right now, ask me again later after I have thunkaboutit | if ($address($nick,2) !== *!*@bwickedphotography.com) .ignore -cu60 $nick | halt }
+  else {
+    .ignore -ctu10 *@*
+    set %qm 3< $+ $nick $+  3>
+
+    var %animals3 $rand(1,104)
+    var %verbs3 $rand(1,7)
+    var %punct4 $rand(1,9)
+    .timerretalk 1 10 describe $chan  $read(verbs.txt,p,%verbs3)  $read(animal_sounds.txt,p,%animals3) $+ $read(punctuation.txt,p,%punct4)
+    unset %punct4
+    unset %verbs3
+    unset %animals3
+    unset %qm
+    unset %rac
+    :end
+  }
+}
+on $1:text:/(kasey)/i:#kasey,#dragonheartsdomain:{
+  if ($me isin $1) && (everything !isin $3) && (! isin $1) || (? isin $1) || (. isin $1)  || (: isin $1) && ($2 == $null) || (! isin $2) && ($3 == $null) {
+    .echo $chan $matchkey $nopath($script) scriptline#: $scriptline $nick userlevel: $ulevel target: $target line info1-: $1-
+    .ignore -cu5 $nick  
+    var %cind $rand(1,14)
+    if (%cind == 1) set %cindy who?
+    if (%cind == 2) set %cindy where?
+    if (%cind == 3) set %cindy OK!
+    if (%cind == 4) set %cindy he did!
+    if (%cind == 5) set %cindy 4 $nick $+ !!!
+    if (%cind == 6) set %cindy hmm, I didn't see that coming!!
+    if (%cind == 7) set %cindy If you say soooo...
+    if (%cind == 8) set %cindy fine...
+    if (%cind == 9) set %cindy WHAT!!??!!
+    if (%cind == 10) set %cindy WTH!!??!!
+    if (%cind == 11) set %cindy I did not!!??!!
+    if (%cind == 12) set %cindy that never happened!!!  
+    if (%cind == 13) set %cindy  7♪6  ♫11  ♫13  ♪ 7 ♪♪ 9  ♫13  ♪    
+    if (%cind == 14) set %cindy 9 $nick $+ !!!    7♪6  ♫11  ♫13  ♪ 7 ♪♪ 9  ♫13  ♪  
+    msg $chan %cindy
+  }
+}
+
+alias cool {
+  if ($1 ischan) { set %cool.chan $1 }
+  if ($1 !ischan) {
+    echo -a 7This command must be used for a CHANNEL not a name, use #
+    halt
+  }
+  .timercoola 1 1 .mode %cool.chan +bbbbbbbbbbbb ~T:block:*://* ~T:block:*.ru* ~T:block:*.info* ~T:block:*.fm* ~T:block:*.tv* ~T:block:*www* ~T:block:*.co.uk* ~T:block:*.org* ~T:block:*.net* ~T:block:*.com* ~T:block:*http* ~T:block:*.tk*
+  .timercoolb -o 1 4 .unset %cool*
+}
+
+alias decool {
+  if ($1 ischan) { set %decool.chan $1 }
+  if ($1 !ischan) {
+    echo -a 7This command must be used for a CHANNEL not a name, use #
+    halt
+  }
+  .timerdecoola 1 1 .mode %decool.chan -bbbbbbbbbbbb ~T:block:*://* ~T:block:*.ru* ~T:block:*.info* ~T:block:*.fm* ~T:block:*.tv* ~T:block:*www* ~T:block:*.co.uk* ~T:block:*.org* ~T:block:*.net* ~T:block:*.com* ~T:block:*http* ~T:block:*.tk*
+  .timerdecoolb -o 1 4 .unset %decool*
+}
+alias -l antiflood { if (!$($+(%,antiflood,.,$1),2)) { set -u5 $+(%,antiflood,.,$1),2)) on } | else { halt } }
+alias kitten { return $regsubex(kitten,$1-,/ *(\d+|_) */g,$iif(\1 == _,$chr(160),$chr(\1))) }
+alias tiger { return $regsubex(tiger,$1-,/(*UTF8)(.)/g,$+($asc(\1),$chr(32))) }
+alias lion { echo -a $+($tiger($tiger($1-)))) }
+alias lion2 { return $+($tiger($tiger($1-)))) }
+alias chars { echo -a $tiger($1-) }
+alias cat { echo -a $kitten($1-) }
+alias lynx { echo -a $+($kitten($kitten($1-)))) }
+alias lynx2 { return $+($kitten($kitten($1-)))) }
+alias charss { echo-a $str($kitten($1),$iif($2 > 1,$2,1)) }
+alias unchars { echo $kitten($1-) }
+alias -l opchkgame if (!$nick(#,$nick,~&@)) { .notice $nick You are not allowed to use this command, requires ~&@ | halt }
+alias -l opchkweather if (!$nick(#,$nick,~&)) { .notice $nick You are not allowed to use this command, requires ~& | halt }
+alias -l opchkquote if (!$nick(#,$nick,~&)) { .notice $nick You are not allowed to use this command, requires ~& | halt }
+alias scnum {  $iif(($window(@Scripts) !== $null),window -c @Scripts,) } | { window -De[2]k[0]m @Scripts | set %scnum $script(0) | set %scnuminc 1 | while (%scnum >= %scnuminc) { echo @Scripts $+($chr(3),4) $chr(40) $+ %scnuminc $+ $chr(41) $+ $chr(46) $+($chr(3),7) $nopath($script(%scnuminc)) $+($chr(3),9) $script(%scnuminc) | inc %scnuminc } | unset %scnum* | halt }
